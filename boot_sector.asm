@@ -1,32 +1,21 @@
 [org 0x7c00]
 
+main:
+	mov bx, HELLO
+	call print
+	call print_new_line
+	mov bx, BASSEM
+	call print
+	call print_new_line
+	jmp $
 
-mov ah, 0x0e ; tty mode
+%include "boot_sector_print.asm"
 
+HELLO:
+	db 'Hello', 0
 
-mov bp, 0x8000
-mov sp, bp
-
-push 'A'
-push 'B'
-push 'C'
-
-pop bx
-mov al, bl
-int 0x10
-
-
-pop bx
-mov al, bl
-int 0x10
-
-
-pop bx
-mov al, bl
-int 0x10
-
-jmp $ ; Keep printing in an infinite loop
-
+BASSEM:
+	db 'BASSEM', 0
 
 ; Fill with 510 zeros minus the size of the previous code
 times 510-($-$$) db 0
