@@ -11,6 +11,7 @@ main:
 
 %include "boot_sector_print.asm"
 %include "boot_sector_print_hex.asm"
+%include "32bit-print.asm"
 
 HELLO:
 	db 'Hello', 0
