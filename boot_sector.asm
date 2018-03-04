@@ -12,11 +12,11 @@ main:
 	call switch_to_pm ; This will never return
 
 
-%include "boot_sector_print.asm"
-;%include "boot_sector_print_hex.asm"
-%include "32bit-print.asm"
-%include "gdt_descriptor.asm"
-%include "gdt_switch.asm"
+%include "boot/boot_sector_print.asm"
+%include "boot/boot_sector_print_hex.asm"
+%include "boot/32bit-print.asm"
+%include "boot/gdt_descriptor.asm"
+%include "boot/gdt_switch.asm"
 
 
 [bits 32]
