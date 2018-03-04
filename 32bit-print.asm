@@ -13,7 +13,7 @@ print_string_pm:
 print_string_pm_loop:
 	mov al, [ebx] ; The char to be printed
 	mov ah, [WHITE_ON_BLACK]
-	cmp eax, 0
+	cmp al, 0
 	je print_string_pm_end
 
 	mov [edx], ax
