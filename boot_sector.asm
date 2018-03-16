@@ -40,6 +40,7 @@ load_kernel:
 start_pm:
 	mov ebx, PM_MODE_MESSAGE
 	call print_string_pm
+	call KERNEL_OFFSET
 	jmp $
 
 
