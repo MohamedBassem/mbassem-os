@@ -1,25 +1,39 @@
-C_FILES = $(wildcard kernel/*.c)
-HEADERS = $(wildcard kernel/*.h)
+C_FILES = $(wildcard kernel/*.c drivers/*.c)
+HEADERS = $(wildcard kernel/*.h drivers/*.h)
 OBJ = ${C_FILES:.c=.o}
+
+DOCKER = docker run --rm -v $(PWD):/work -w /work kernel-dev
+LD = /usr/bin/ld
+CC = /usr/bin/gcc
+NASM = /usr/local/bin/nasm
+QEMU = qemu-system-i386
 
 all: os-image.bin
 
 run: os-image.bin
-	qemu-system-x86_64 -fda $<
+	${QEMU} -fda $<
 
 clean:
-	rm -f *.bin *.o
+	rm -f *.bin *.o *.elf
 	rm -f kernel/*.bin kernel/*.o
+	rm -f drivers/*.bin drivers/*.o
 
 os-image.bin: boot_sector.bin kernel.bin
 	cat $^ > $@
 
-kernel.bin: ${OBJ}
-	docker run --rm -v $(PWD):/work -w /work kernel-dev /usr/bin/ld -o $@ -Ttext 0x1000 --oformat binary $^
+kernel.elf: ${OBJ}
+	${DOCKER} ${LD} -o $@ -Ttext 0x1000 $^
 
-%.o : %.c
-	docker run --rm -v $(PWD):/work -w /work kernel-dev /usr/bin/gcc -ffreestanding -c $< -o $@
+kernel.bin: ${OBJ}
+	${DOCKER} ${LD} -o $@ -Ttext 0x1000 --oformat binary $^
+
+debug: os-image.bin kernel.elf
+	${QEMU} -s -fda os-image.bin &
+	gdb -ex "target remote localhost:1234" -ex "symbol-file kernel.elf"
+
+%.o : %.c ${HEADERS}
+	${DOCKER} ${CC} -g -ffreestanding -c $< -o $@
 
 %.bin : %.asm
-	/usr/local/bin/nasm $< -f bin -o $@
+	${NASM} $< -f bin -o $@
 
