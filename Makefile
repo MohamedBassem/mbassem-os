@@ -7,7 +7,7 @@ C_IMAGE_PATH := $(BIN_DIR)/kernel.bin
 BIN_PATH := $(BIN_DIR)/image.bin
 
 run: build_bin
-	qemu-system-x86_64 $(BIN_PATH)
+	qemu-system-x86_64 -fda $(BIN_PATH)
 
 clean:
 	rm -f bin/*
