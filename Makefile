@@ -1,28 +1,25 @@
-SRC_DIR := src
-BIN_DIR := bin
+C_FILES = $(wildcard kernel/*.c)
+HEADERS = $(wildcard kernel/*.h)
+OBJ = ${C_FILES:.c=.o}
 
-DOCKER_WORKSPACE := /work
-ASSEMBLY_IMAGE_PATH := $(BIN_DIR)/boot.bin
-C_IMAGE_PATH := $(BIN_DIR)/kernel.bin
-BIN_PATH := $(BIN_DIR)/image.bin
+all: os-image.bin
 
-run: build_bin
-	qemu-system-x86_64 -fda $(BIN_PATH)
+run: os-image.bin
+	qemu-system-x86_64 -fda $<
 
 clean:
-	rm -f bin/*
+	rm -f *.bin *.o
+	rm -f kernel/*.bin kernel/*.o
 
-build_bin: assemble_boot_sector cross_compile_kernel
-	mkdir -p $(BIN_DIR)
-	cat $(ASSEMBLY_IMAGE_PATH) $(C_IMAGE_PATH) > $(BIN_PATH)
+os-image.bin: boot_sector.bin kernel.bin
+	cat $^ > $@
 
-assemble_boot_sector:
-	/usr/local/bin/nasm boot_sector.asm -o $(ASSEMBLY_IMAGE_PATH)
+kernel.bin: ${OBJ}
+	docker run --rm -v $(PWD):/work -w /work kernel-dev /usr/bin/ld -o $@ -Ttext 0x1000 --oformat binary $^
 
-cross_compile_kernel:
-	docker run -v $(PWD):/work -w /work kernel-dev /usr/bin/make compile_kernel
+%.o : %.c
+	docker run --rm -v $(PWD):/work -w /work kernel-dev /usr/bin/gcc -ffreestanding -c $< -o $@
 
-# This target will be called from docker
-compile_kernel:
-	gcc -ffreestanding -c $(SRC_DIR)/kernel.c -o $(BIN_DIR)/kernel.o
-	ld -o $(C_IMAGE_PATH) -Ttext 0x1000 --oformat binary $(BIN_DIR)/kernel.o
+%.bin : %.asm
+	/usr/local/bin/nasm $< -f bin -o $@
+
