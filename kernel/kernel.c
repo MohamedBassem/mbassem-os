@@ -2,6 +2,10 @@
 
 void main() {
   clear_screen();
-  print("Hello World!\n");
-  print("And new lines work!\n");
+  for(int i=0;i<25;i++) {
+    for(int j=0;j<=i;j++) {
+      print("*");
+    }
+    print("\n");
+  }
 }
