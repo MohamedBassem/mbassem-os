@@ -3,6 +3,7 @@ HEADERS = $(wildcard kernel/*.h drivers/*.h)
 OBJ = ${C_FILES:.c=.o}
 
 DOCKER = docker run --rm -v $(PWD):/work -w /work kernel-dev
+DOCKER_INT = docker run -it --net=host --rm -v $(PWD):/work -w /work kernel-dev
 LD = /usr/bin/ld
 CC = /usr/bin/gcc
 NASM = /usr/local/bin/nasm
@@ -28,8 +29,8 @@ kernel.bin: ${OBJ}
 	${DOCKER} ${LD} -o $@ -Ttext 0x1000 --oformat binary $^
 
 debug: os-image.bin kernel.elf
-	${QEMU} -s -fda os-image.bin &
-	gdb -ex "target remote localhost:1234" -ex "symbol-file kernel.elf"
+	${QEMU} -gdb tcp::9000 -S -fda os-image.bin &
+	${DOCKER_INT} /usr/bin/gdb -ex "target remote docker.for.mac.localhost:9000" -ex "symbol-file kernel.elf"
 
 %.o : %.c ${HEADERS}
 	${DOCKER} ${CC} -g -ffreestanding -c $< -o $@
